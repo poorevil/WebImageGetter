@@ -47,22 +47,22 @@ public abstract class ImageWorker {
 		return threadPool;
 	}
 
-	public void getBitmapFromUrl(Context context, int position, String url,
+	public Future<Bitmap> getBitmapFromUrl(Context context, int position, String url,
 			LoadImgCallable callable){
-		sendGetBitmapRequest(context,position,url,callable,0,0);
+		return sendGetBitmapRequest(context,position,url,callable,0,0);
 	}
 	
-	public void getBitmapFromUrl(Context context, int position, String url,
+	public Future<Bitmap> getBitmapFromUrl(Context context, int position, String url,
 			LoadImgCallable callable , int size){
-		sendGetBitmapRequest(context,position,url,callable,size,size);
+		return sendGetBitmapRequest(context,position,url,callable,size,size);
 	}
 	
-	public void getBitmapFromUrl(Context context, int position, String url,
+	public Future<Bitmap> getBitmapFromUrl(Context context, int position, String url,
 			LoadImgCallable callable,int width,int height) {
-		sendGetBitmapRequest(context,position,url,callable,width,height);
+		return sendGetBitmapRequest(context,position,url,callable,width,height);
 	}
 	
-	private void sendGetBitmapRequest(Context context, int position, String url,
+	private Future<Bitmap> sendGetBitmapRequest(Context context, int position, String url,
 			LoadImgCallable callable,int width,int height){
 		Queue<WeakReference<Future<Bitmap>>> requestList = requestMap
 				.get(context);
@@ -94,6 +94,8 @@ public abstract class ImageWorker {
 
 		Future request = threadPool.submit(new GetImageLoad(position, url,callable,height,height));
 		requestList.add(new WeakReference<Future<Bitmap>>(request));
+		
+		return request;
 	}
 
 	public class GetImageLoad implements Runnable {
@@ -116,7 +118,8 @@ public abstract class ImageWorker {
 			Bitmap map = imageCache.getBitmapFromMemCache(url);
 			if (map != null && !map.isRecycled()) {
 				// System.out.println("WebImageGetterForMingRenGridView get from 内存..........");
-				callabe.setViewImage(position, url);
+//				callabe.setViewImage(position, url);
+				callabe.setImage(map);
 				return;
 			}
 
@@ -140,7 +143,8 @@ public abstract class ImageWorker {
 				imageCache.addBitmapToCache(url, img);
 
 				// 回调activity 设置imageView
-				callabe.setViewImage(position, url);
+//				callabe.setViewImage(position, url);
+				callabe.setImage(img);
 			}
 		}
 	}
@@ -202,7 +206,8 @@ public abstract class ImageWorker {
 	
 	//activity页面回调接口  setImageView
 	public interface LoadImgCallable {
-		public void setViewImage(int position, String url);
+//		public void setViewImage(int position, String url);
+		public void setImage(Bitmap bitmap);
 	}
 	
 	//线程池任务停止部分

@@ -1,18 +1,14 @@
 package org.hanchao.webimagegetter.sample;
 
-import org.hanchao.webimagegetter.ImageWorker;
-import org.hanchao.webimagegetter.ImageWorker.LoadImgCallable;
+import org.hanchao.webimagegetter.WebImageView;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 
 public class MainActivity extends Activity{
@@ -61,27 +57,27 @@ public class MainActivity extends Activity{
 		listview = (ListView)findViewById(R.id.list);
 		listview.setAdapter(new ListAdapter());
 		
-		listview.setOnScrollListener(new AbsListView.OnScrollListener() {
-			@Override
-			public void onScroll(AbsListView view,
-					int firstVisibleItem, int visibleItemCount,
-					int totalItemCount) {
-			}
-
-			@Override
-			public void onScrollStateChanged(AbsListView view,
-					int scrollState) {
-				if(scrollState == SCROLL_STATE_FLING){ //滑动时停止加载图片
-					isLoadListViewImg = false;
-				}
-				else {
-					isLoadListViewImg = true;
-					new WebImageGetterForChartListView(0).start();
-				}
-			}
-		});
-		
-		new WebImageGetterForChartListView(500).start();
+//		listview.setOnScrollListener(new AbsListView.OnScrollListener() {
+//			@Override
+//			public void onScroll(AbsListView view,
+//					int firstVisibleItem, int visibleItemCount,
+//					int totalItemCount) {
+//			}
+//
+//			@Override
+//			public void onScrollStateChanged(AbsListView view,
+//					int scrollState) {
+//				if(scrollState == SCROLL_STATE_FLING){ //滑动时停止加载图片
+//					isLoadListViewImg = false;
+//				}
+//				else {
+//					isLoadListViewImg = true;
+//					new WebImageGetterForChartListView(0).start();
+//				}
+//			}
+//		});
+//		
+//		new WebImageGetterForChartListView(500).start();
 		
 	}
 	
@@ -114,103 +110,107 @@ public class MainActivity extends Activity{
 				
 			}
 			
-			ImageView image = (ImageView)convertView.findViewById(R.id.image);
-			convertView.setTag(imageUrls[position]+position);
-			if(ImageWorker.getInstance().isBitmapExist(imageUrls[position])){
-				image.setImageBitmap(ImageWorker.getInstance().getBitmapFromMemCache(imageUrls[position]));
-			}else{
-				image.setImageResource(R.drawable.ic_launcher);
-			}
+//			ImageView image = (ImageView)convertView.findViewById(R.id.image);
+//			convertView.setTag(imageUrls[position]+position);
+//			if(ImageWorker.getInstance().isBitmapExist(imageUrls[position])){
+//				image.setImageBitmap(ImageWorker.getInstance().getBitmapFromMemCache(imageUrls[position]));
+//			}else{
+//				image.setImageResource(R.drawable.ic_launcher);
+//			}
+			
+			WebImageView image = (WebImageView)convertView.findViewById(R.id.image);
+			image.setImageUrl(imageUrls[position]);
+			
 			
 			return convertView;
 		}
 		
 	}
 	
-	public class WebImageGetterForChartListView extends Thread implements LoadImgCallable{
-
-		private int sleepTime;
-
-		public WebImageGetterForChartListView(int sleepTime) {
-			this.sleepTime = sleepTime;
-		}
-		
-		@Override
-		public void run() {
-			
-			if(sleepTime>0){
-				try{
-					Thread.sleep(sleepTime);
-				}catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			
-			try {
-				if (imageUrls != null && imageUrls.length > 0 && listview != null) {
-					int beginOffSet = listview.getFirstVisiblePosition();
-					int endOffSet = listview.getLastVisiblePosition();
-					
-//					System.out.println("beginOffSet : " + beginOffSet + " endOffSet : " + endOffSet);
-					
-					for (; beginOffSet <= endOffSet; beginOffSet++) {
-						
-						if(!isLoadListViewImg || !(beginOffSet < imageUrls.length)){
-							break;
-						}
-						if (!this.isInterrupted()) {
-							
-							ImageWorker.getInstance().getBitmapFromUrl(MainActivity.this
-									, beginOffSet, imageUrls[beginOffSet], this);
-							
-							if (ImageWorker.getInstance().isBitmapNull(imageUrls[beginOffSet])){
-								ImageWorker.getInstance().getBitmapFromUrl(MainActivity.this
-										, beginOffSet, imageUrls[beginOffSet], this);
-								
-							}else{
-								setViewImage(beginOffSet,imageUrls[beginOffSet]);
-							}
-							
-						} else {
-							return;
-						}
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			}
-		}
-		
-		@Override
-		public void setViewImage(final int position, final String url) {
-			
-			if(ImageWorker.getInstance().isBitmapExist(url)){
-				
-				final Bitmap map = ImageWorker.getInstance().getBitmapFromMemCache(url);
-				
-				handler.post(new Runnable() {
-					@Override
-					public void run() {
-						if(imageUrls != null && imageUrls.length > 0 && position <= imageUrls.length-1){
-							
-							View convertView = (View)listview.findViewWithTag(imageUrls[position]+position);
-							
-							if(convertView==null)
-								return;
-							
-							ImageView icon = (ImageView)convertView.findViewById(R.id.image);
-							
-							if(icon != null && isLoadListViewImg){
-								if(map != null && !map.isRecycled()){
-									icon.setImageBitmap(map);
-								}
-							}
-						}
-					}
-				});
-			}
-		}
-	}
+//	public class WebImageGetterForChartListView extends Thread implements LoadImgCallable{
+//
+//		private int sleepTime;
+//
+//		public WebImageGetterForChartListView(int sleepTime) {
+//			this.sleepTime = sleepTime;
+//		}
+//		
+//		@Override
+//		public void run() {
+//			
+//			if(sleepTime>0){
+//				try{
+//					Thread.sleep(sleepTime);
+//				}catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			
+//			try {
+//				if (imageUrls != null && imageUrls.length > 0 && listview != null) {
+//					int beginOffSet = listview.getFirstVisiblePosition();
+//					int endOffSet = listview.getLastVisiblePosition();
+//					
+////					System.out.println("beginOffSet : " + beginOffSet + " endOffSet : " + endOffSet);
+//					
+//					for (; beginOffSet <= endOffSet; beginOffSet++) {
+//						
+//						if(!isLoadListViewImg || !(beginOffSet < imageUrls.length)){
+//							break;
+//						}
+//						if (!this.isInterrupted()) {
+//							
+//							ImageWorker.getInstance().getBitmapFromUrl(MainActivity.this
+//									, beginOffSet, imageUrls[beginOffSet], this);
+//							
+//							if (ImageWorker.getInstance().isBitmapNull(imageUrls[beginOffSet])){
+//								ImageWorker.getInstance().getBitmapFromUrl(MainActivity.this
+//										, beginOffSet, imageUrls[beginOffSet], this);
+//								
+//							}else{
+//								setViewImage(beginOffSet,imageUrls[beginOffSet]);
+//							}
+//							
+//						} else {
+//							return;
+//						}
+//					}
+//				}
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				return;
+//			}
+//		}
+//		
+//		@Override
+//		public void setViewImage(final int position, final String url) {
+//			
+//			if(ImageWorker.getInstance().isBitmapExist(url)){
+//				
+//				final Bitmap map = ImageWorker.getInstance().getBitmapFromMemCache(url);
+//				
+//				handler.post(new Runnable() {
+//					@Override
+//					public void run() {
+//						if(imageUrls != null && imageUrls.length > 0 && position <= imageUrls.length-1){
+//							
+//							View convertView = (View)listview.findViewWithTag(imageUrls[position]+position);
+//							
+//							if(convertView==null)
+//								return;
+//							
+//							ImageView icon = (ImageView)convertView.findViewById(R.id.image);
+//							
+//							if(icon != null && isLoadListViewImg){
+//								if(map != null && !map.isRecycled()){
+//									icon.setImageBitmap(map);
+//								}
+//							}
+//						}
+//					}
+//				});
+//			}
+//		}
+//	}
 	
 }
