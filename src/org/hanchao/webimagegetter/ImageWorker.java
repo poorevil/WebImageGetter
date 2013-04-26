@@ -9,6 +9,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -95,6 +96,10 @@ public abstract class ImageWorker {
 		Future request = threadPool.submit(new GetImageLoad(position, url,callable,height,height));
 		requestList.add(new WeakReference<Future<Bitmap>>(request));
 		
+//		System.out.println("-------==========-------getActiveCount "+((ThreadPoolExecutor)threadPool).getActiveCount()
+//				+"-------==========-------getQueue "+((ThreadPoolExecutor)threadPool).getQueue().size());
+		
+		
 		return request;
 	}
 
@@ -115,11 +120,12 @@ public abstract class ImageWorker {
 
 		@Override
 		public void run() {
+			
 			Bitmap map = imageCache.getBitmapFromMemCache(url);
 			if (map != null && !map.isRecycled()) {
 				// System.out.println("WebImageGetterForMingRenGridView get from 内存..........");
 //				callabe.setViewImage(position, url);
-				callabe.setImage(map);
+				callabe.setImage(map,url);
 				return;
 			}
 
@@ -144,7 +150,7 @@ public abstract class ImageWorker {
 
 				// 回调activity 设置imageView
 //				callabe.setViewImage(position, url);
-				callabe.setImage(img);
+				callabe.setImage(img,url);
 			}
 		}
 	}
@@ -207,7 +213,7 @@ public abstract class ImageWorker {
 	//activity页面回调接口  setImageView
 	public interface LoadImgCallable {
 //		public void setViewImage(int position, String url);
-		public void setImage(Bitmap bitmap);
+		public void setImage(Bitmap bitmap,String url);
 	}
 	
 	//线程池任务停止部分
